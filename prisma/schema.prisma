@@ -6,6 +6,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ─── Builder (the real estate company) ───────────────────────────────────────
@@ -96,6 +97,7 @@ enum ProjectType {
   MIXED_USE
   VILLA
   PLOTTED
+  PLOTTED_DEVELOPMENT
 }
 
 // ─── Floor & Unit ─────────────────────────────────────────────────────────────
