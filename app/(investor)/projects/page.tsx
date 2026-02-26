@@ -3,7 +3,8 @@ import Link from 'next/link'
 import { MapPin, ChevronRight } from 'lucide-react'
 import { ProgressRing } from '@/components/shared/ProgressRing'
 import { StatusBadge } from '@/components/shared/StatusBadge'
-import { AmountDisplay } from '@/components/shared/AmountDisplay'
+
+export const dynamic = 'force-dynamic'
 
 async function getProjects() {
     try {

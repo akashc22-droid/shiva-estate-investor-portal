@@ -1,8 +1,9 @@
 import { prisma } from '@/lib/prisma/client'
 import { DashboardClient } from './DashboardClient'
 
+export const dynamic = 'force-dynamic'
+
 // Demo investor ID — in production read from Supabase session
-const DEMO_INVESTOR_ID_FALLBACK = null
 
 async function getInvestorData() {
     try {

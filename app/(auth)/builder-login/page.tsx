@@ -3,25 +3,35 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Mail, Lock, ArrowRight, Loader2, Building2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 export default function BuilderLoginPage() {
+    const router = useRouter()
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
 
-    const supabase = createClient()
+    async function getSupabase() {
+        const { createClient } = await import('@/lib/supabase/client')
+        return createClient()
+    }
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         setError('')
         setLoading(true)
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        setLoading(false)
-        if (error) { setError(error.message); return }
-        window.location.href = '/builder/dashboard'
+        try {
+            const supabase = await getSupabase()
+            const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+            if (authError) { setError(authError.message); return }
+            router.push('/builder/dashboard')
+        } catch {
+            setError('Authentication not configured — use Demo Login on the main page.')
+        } finally {
+            setLoading(false)
+        }
     }
 
     return (
@@ -43,7 +53,7 @@ export default function BuilderLoginPage() {
                     <h1 className="font-display text-2xl font-bold text-text-primary mb-1">
                         Builder Admin
                     </h1>
-                    <p className="text-text-secondary text-sm">ShivaOS Realty Admin Portal</p>
+                    <p className="text-text-secondary text-sm">Shiva Estate · Admin Portal</p>
                 </div>
 
                 <div className="card p-6">
@@ -57,7 +67,7 @@ export default function BuilderLoginPage() {
                                     type="email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="admin@shivaos.com"
+                                    placeholder="admin@shivaestate.com"
                                     className="w-full bg-surface-dark border border-surface-border rounded-xl pl-9 pr-4 py-3 text-text-primary placeholder:text-text-muted text-sm focus:border-brand-accent transition-colors"
                                     required
                                 />
@@ -78,7 +88,7 @@ export default function BuilderLoginPage() {
                                 />
                             </div>
                         </div>
-                        {error && <p className="text-status-red text-xs">{error}</p>}
+                        {error && <p className="text-status-amber text-xs bg-status-amber/5 border border-status-amber/20 rounded-lg px-3 py-2">{error}</p>}
                         <button
                             type="submit"
                             disabled={loading}
@@ -91,8 +101,14 @@ export default function BuilderLoginPage() {
                     </form>
                 </div>
 
-                <div className="text-center mt-6">
-                    <Link href="/login" className="text-text-muted text-xs hover:text-text-secondary transition-colors">
+                <div className="text-center mt-6 space-y-2">
+                    <button
+                        onClick={() => router.push('/builder/dashboard')}
+                        className="block w-full text-brand-accent text-xs border border-brand-accent/20 rounded-xl py-2 hover:bg-brand-accent/5 transition-colors"
+                    >
+                        ▷ Demo Admin View (no login needed)
+                    </button>
+                    <Link href="/login" className="block text-text-muted text-xs hover:text-text-secondary transition-colors">
                         ← Back to Investor Login
                     </Link>
                 </div>

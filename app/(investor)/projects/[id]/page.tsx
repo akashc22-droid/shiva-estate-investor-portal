@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma/client'
 import { notFound } from 'next/navigation'
 import { ProjectDetailClient } from './ProjectDetailClient'
 
+export const dynamic = 'force-dynamic'
+
 interface PageProps {
     params: { id: string }
 }

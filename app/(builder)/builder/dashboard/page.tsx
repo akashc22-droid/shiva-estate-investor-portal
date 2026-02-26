@@ -1,4 +1,6 @@
 import { prisma } from '@/lib/prisma/client'
+
+export const dynamic = 'force-dynamic'
 import Link from 'next/link'
 import { TrendingUp, Users, Building2, AlertCircle, ChevronRight } from 'lucide-react'
 import { StatusBadge } from '@/components/shared/StatusBadge'
@@ -11,7 +13,7 @@ async function getBuilderStats() {
             prisma.investor.findMany(),
             prisma.investment.findMany({ include: { project: true } }),
         ])
-        const totalFunds = projects.reduce((sum, p) => sum + p.fundingRaised, 0)
+        const totalFunds = projects.reduce((sum: number, p: { fundingRaised: number }) => sum + p.fundingRaised, 0)
         return { projects, investors, investments, totalFunds }
     } catch {
         return { projects: DEMO_PROJECTS, investors: Array(5), investments: Array(5), totalFunds: 538 }
@@ -33,7 +35,7 @@ export default async function BuilderDashboardPage() {
             {/* Header */}
             <div>
                 <h1 className="font-display text-2xl font-bold text-text-primary">Builder Dashboard</h1>
-                <p className="text-text-muted text-sm mt-1">ShivaOS Realty — Admin Overview</p>
+                <p className="text-text-muted text-sm mt-1">Shiva Estate · Shiva Buildcon — Admin Overview</p>
             </div>
 
             {/* Stats */}
@@ -99,14 +101,14 @@ export default async function BuilderDashboardPage() {
 }
 
 const DEMO_PROJECTS = [
-    { id: 'demo-skyline', name: 'ShivaOS Skyline', city: 'Hyderabad', overallProgress: 68, status: 'UNDER_CONSTRUCTION', totalUnits: 280, totalProjectValue: 480 },
-    { id: 'demo-gardens', name: 'ShivaOS Gardens', city: 'Hyderabad', overallProgress: 92, status: 'NEAR_COMPLETION', totalUnits: 160, totalProjectValue: 220 },
-    { id: 'demo-horizon', name: 'ShivaOS Horizon', city: 'Hyderabad', overallProgress: 0, status: 'UPCOMING', totalUnits: 400, totalProjectValue: 620 },
+    { id: 'demo-sankhedi', name: 'Sankhedi Project', city: 'Kolar Road, Bhopal', overallProgress: 55, status: 'UNDER_CONSTRUCTION', totalUnits: 48, totalProjectValue: 45 },
+    { id: 'demo-pinaki', name: 'Pinaki Home', city: 'Banjari, Bhopal', overallProgress: 92, status: 'NEAR_COMPLETION', totalUnits: 72, totalProjectValue: 28 },
+    { id: 'demo-salaiya', name: 'Salaiya Project', city: 'Salaiya, Bhopal', overallProgress: 0, status: 'UPCOMING', totalUnits: 64, totalProjectValue: 38 },
 ]
 
 const DEMO_ACTIVITY = [
-    { icon: '💰', title: 'Rajesh Sharma — payment due ₹20L on 28 Feb', time: '2 days ago' },
-    { icon: '🏗️', title: 'Progress update published — Skyline Feb 2026', time: '12 days ago' },
-    { icon: '✅', title: 'RERA Q3 filing completed — Score 94/100', time: '42 days ago' },
-    { icon: '👤', title: 'New investor registered — Arjun Kapoor (Horizon)', time: '52 days ago' },
+    { icon: '💰', title: 'Rajesh Sharma — payment due ₹15L on Sankhedi Project', time: '2 days ago' },
+    { icon: '🏗️', title: 'Progress update published — Sankhedi Feb 2026 (55%)', time: '6 days ago' },
+    { icon: '🏠', title: 'Pinaki Home — Flat PH-204 handover docs ready', time: '12 days ago' },
+    { icon: '✅', title: 'RERA filing completed — Sankhedi Project MP', time: '30 days ago' },
 ]
