@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-playfair: 'Playfair Display', serif;
+  --font-dm-sans: 'DM Sans', sans-serif;
+  --font-jetbrains: 'JetBrains Mono', monospace;
+
+  --brand-primary: #1A1A2E;
+  --brand-accent: #C9A84C;
+  --brand-accent-light: #F0D080;
+  --surface-dark: #0F0F1A;
+  --surface-card: #1E1E35;
+  --surface-border: #2A2A4A;
+  --text-primary: #F0EDE8;
+  --text-secondary: #9B9BB0;
+  --text-muted: #5A5A75;
+  --status-green: #2ECC71;
+  --status-amber: #F39C12;
+  --status-red: #E74C3C;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--surface-dark);
+  color: var(--text-primary);
+  font-family: var(--font-dm-sans);
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--surface-dark); }
+::-webkit-scrollbar-thumb { background: var(--surface-border); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Gold shimmer skeleton loader */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--surface-card) 25%,
+    rgba(201, 168, 76, 0.1) 50%,
+    var(--surface-card) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Gold gradient text */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #C9A84C, #F0D080, #C9A84C);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card base */
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Gold accent card */
+.card-gold {
+  background: var(--surface-card);
+  border: 1px solid var(--brand-accent);
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.2);
+}
+
+/* Bottom tab bar safe area */
+.pb-safe {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+/* Number display */
+.font-mono {
+  font-family: var(--font-jetbrains);
+}
+
+/* Input styles */
+input, textarea, select {
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+}
+
+/* Smooth page transitions */
+@layer utilities {
+  .transition-smooth {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}

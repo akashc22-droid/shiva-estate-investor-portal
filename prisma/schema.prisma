@@ -1,0 +1,328 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Builder (the real estate company) ───────────────────────────────────────
+
+model Builder {
+  id           String        @id @default(cuid())
+  name         String
+  logoUrl      String?
+  primaryColor String        @default("#C9A84C")
+  subdomain    String        @unique // e.g., "shivaos" → shivaos.yourplatform.com
+  contactEmail String
+  contactPhone String?
+  reraId       String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  projects  Project[]
+  investors Investor[]
+  users     BuilderUser[]
+}
+
+model BuilderUser {
+  id         String      @id @default(cuid())
+  builderId  String
+  builder    Builder     @relation(fields: [builderId], references: [id])
+  email      String      @unique
+  name       String
+  role       BuilderRole @default(MANAGER)
+  supabaseId String      @unique
+  createdAt  DateTime    @default(now())
+}
+
+enum BuilderRole {
+  ADMIN
+  MANAGER
+  VIEWER
+}
+
+// ─── Project ─────────────────────────────────────────────────────────────────
+
+model Project {
+  id                 String        @id @default(cuid())
+  builderId          String
+  builder            Builder       @relation(fields: [builderId], references: [id])
+  name               String
+  description        String?
+  location           String
+  city               String
+  state              String
+  reraNumber         String?
+  reraState          String? // e.g., "MH", "KA", "TS"
+  totalUnits         Int
+  totalProjectValue  Float // in INR crores
+  totalFundingTarget Float // in INR crores
+  fundingRaised      Float         @default(0)
+  constructionStart  DateTime?
+  expectedCompletion DateTime?
+  actualCompletion   DateTime?
+  overallProgress    Int           @default(0) // 0-100
+  status             ProjectStatus @default(UPCOMING)
+  projectType        ProjectType   @default(RESIDENTIAL)
+  thumbnailUrl       String?
+  brochureUrl        String?
+  latitude           Float?
+  longitude          Float?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  investments  Investment[]
+  milestones   Milestone[]
+  updates      ProjectUpdate[]
+  documents    Document[]
+  floors       Floor[]
+}
+
+enum ProjectStatus {
+  UPCOMING
+  LAUNCHED
+  UNDER_CONSTRUCTION
+  NEAR_COMPLETION
+  COMPLETED
+  DELAYED
+}
+
+enum ProjectType {
+  RESIDENTIAL
+  COMMERCIAL
+  MIXED_USE
+  VILLA
+  PLOTTED
+}
+
+// ─── Floor & Unit ─────────────────────────────────────────────────────────────
+
+model Floor {
+  id         String  @id @default(cuid())
+  projectId  String
+  project    Project @relation(fields: [projectId], references: [id])
+  name       String // e.g., "Tower A - Floor 12"
+  totalUnits Int
+  progress   Int     @default(0)
+  units      Unit[]
+}
+
+model Unit {
+  id         String     @id @default(cuid())
+  floorId    String
+  floor      Floor      @relation(fields: [floorId], references: [id])
+  unitNumber String // e.g., "A-1201"
+  type       String // e.g., "3BHK", "2BHK"
+  carpetArea Float // sq ft
+  price      Float // in INR
+  status     UnitStatus @default(AVAILABLE)
+  investment Investment?
+}
+
+enum UnitStatus {
+  AVAILABLE
+  BOOKED
+  REGISTERED
+  HANDED_OVER
+}
+
+// ─── Investor ─────────────────────────────────────────────────────────────────
+
+model Investor {
+  id                String   @id @default(cuid())
+  builderId         String
+  builder           Builder  @relation(fields: [builderId], references: [id])
+  supabaseId        String   @unique
+  name              String
+  email             String
+  phone             String?
+  panNumber         String? // encrypted in production
+  aadhaarLast4      String?
+  isNRI             Boolean  @default(false)
+  country           String? // for NRI investors
+  preferredLanguage String   @default("en")
+  profilePhotoUrl   String?
+  onboardedAt       DateTime @default(now())
+  createdAt         DateTime @default(now())
+
+  investments Investment[]
+  documents   Document[]
+}
+
+// ─── Investment ───────────────────────────────────────────────────────────────
+
+model Investment {
+  id          String   @id @default(cuid())
+  investorId  String
+  investor    Investor @relation(fields: [investorId], references: [id])
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  unitId      String?  @unique
+  unit        Unit?    @relation(fields: [unitId], references: [id])
+
+  // Financial details
+  bookingAmount     Float // initial booking payment in INR
+  totalAgreedAmount Float // full unit price in INR
+  totalPaid         Float @default(0)
+  pendingAmount     Float
+  paymentPlan       String? // JSON: payment schedule
+
+  // Agreement details
+  agreementDate   DateTime?
+  agreementNumber String?
+  possessionDate  DateTime?
+
+  // AI prediction outputs (updated monthly)
+  predictedReturnPct   Float? // e.g., 18.5 (for 18.5%)
+  predictedReturnRange String? // e.g., "15-22%"
+  marketAppreciation   Float? // projected value appreciation
+  confidenceScore      Float? // AI confidence 0-1
+  lastPredictionAt     DateTime?
+
+  status    InvestmentStatus @default(BOOKED)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  payments Payment[]
+}
+
+enum InvestmentStatus {
+  BOOKED
+  AGREEMENT_SIGNED
+  UNDER_CONSTRUCTION
+  READY_FOR_POSSESSION
+  POSSESSION_GIVEN
+  REGISTERED
+}
+
+// ─── Payment ─────────────────────────────────────────────────────────────────
+
+model Payment {
+  id             String     @id @default(cuid())
+  investmentId   String
+  investment     Investment @relation(fields: [investmentId], references: [id])
+  amount         Float
+  paidAt         DateTime
+  mode           String // "NEFT", "UPI", "Cheque", "DD"
+  referenceNo    String?
+  receiptUrl     String?
+  demandNoticeId String?
+  createdAt      DateTime   @default(now())
+}
+
+// ─── Milestone ────────────────────────────────────────────────────────────────
+
+model Milestone {
+  id          String          @id @default(cuid())
+  projectId   String
+  project     Project         @relation(fields: [projectId], references: [id])
+  name        String // e.g., "Foundation Complete", "Slab 5 Cast"
+  description String?
+  targetDate  DateTime
+  actualDate  DateTime?
+  progress    Int             @default(0) // 0-100
+  status      MilestoneStatus @default(UPCOMING)
+  order       Int // display order
+  createdAt   DateTime        @default(now())
+}
+
+enum MilestoneStatus {
+  UPCOMING
+  IN_PROGRESS
+  COMPLETED
+  DELAYED
+}
+
+// ─── Project Update ───────────────────────────────────────────────────────────
+
+model ProjectUpdate {
+  id          String     @id @default(cuid())
+  projectId   String
+  project     Project    @relation(fields: [projectId], references: [id])
+  title       String
+  body        String // markdown supported
+  photoUrls   String[] // array of Supabase storage URLs
+  updateType  UpdateType @default(CONSTRUCTION)
+  isPublished Boolean    @default(false)
+  publishedAt DateTime?
+  aiGenerated Boolean    @default(false) // was this drafted by AI?
+  createdAt   DateTime   @default(now())
+
+  notifications Notification[]
+}
+
+enum UpdateType {
+  CONSTRUCTION
+  RERA_COMPLIANCE
+  FINANCIAL
+  LEGAL
+  POSSESSION
+  GENERAL
+}
+
+// ─── Document ─────────────────────────────────────────────────────────────────
+
+model Document {
+  id        String    @id @default(cuid())
+  builderId String?
+  investorId String?
+  investor  Investor? @relation(fields: [investorId], references: [id])
+  projectId String?
+  project   Project?  @relation(fields: [projectId], references: [id])
+
+  name           String
+  fileUrl        String // Supabase Storage URL
+  fileSize       Int? // bytes
+  mimeType       String
+  documentType   DocumentType @default(OTHER)
+
+  // AI-extracted metadata
+  aiCategory    String?
+  aiExtractedData Json?
+
+  uploadedBy          String // "builder" | "investor" | "system"
+  isVisibleToInvestor Boolean  @default(true)
+  createdAt           DateTime @default(now())
+}
+
+enum DocumentType {
+  ALLOTMENT_LETTER
+  SALE_AGREEMENT
+  PAYMENT_RECEIPT
+  DEMAND_NOTICE
+  OC_CERTIFICATE
+  CC_CERTIFICATE
+  RERA_REGISTRATION
+  FLOOR_PLAN
+  BROCHURE
+  NOC
+  POSSESSION_LETTER
+  REGISTRATION_DEED
+  OTHER
+}
+
+// ─── Notification ─────────────────────────────────────────────────────────────
+
+model Notification {
+  id              String            @id @default(cuid())
+  investorId      String
+  projectUpdateId String?
+  projectUpdate   ProjectUpdate?    @relation(fields: [projectUpdateId], references: [id])
+  title           String
+  body            String
+  type            NotificationType  @default(UPDATE)
+  isRead          Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+}
+
+enum NotificationType {
+  UPDATE
+  PAYMENT_DUE
+  MILESTONE_REACHED
+  DOCUMENT_UPLOADED
+  RERA_ALERT
+  AI_INSIGHT
+}
