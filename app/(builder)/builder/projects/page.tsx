@@ -8,22 +8,22 @@ import { ProgressRing } from '@/components/shared/ProgressRing'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 
 const DEMO_PROJECTS = [
-    { id: 'demo-skyline', name: 'ShivaOS Skyline', city: 'Hyderabad', progress: 68, status: 'UNDER_CONSTRUCTION', investors: 38, units: 280 },
-    { id: 'demo-gardens', name: 'ShivaOS Gardens', city: 'Hyderabad', progress: 92, status: 'NEAR_COMPLETION', investors: 42, units: 160 },
-    { id: 'demo-horizon', name: 'ShivaOS Horizon', city: 'Hyderabad', progress: 0, status: 'UPCOMING', investors: 1, units: 400 },
+    { id: 'demo-sankhedi', name: 'Sankhedi Project', city: 'Kolar Road, Bhopal', progress: 55, status: 'UNDER_CONSTRUCTION', investors: 12, units: 48 },
+    { id: 'demo-pinaki', name: 'Pinaki Home', city: 'Banjari, Bhopal', progress: 92, status: 'NEAR_COMPLETION', investors: 18, units: 72 },
+    { id: 'demo-salaiya', name: 'Salaiya Project', city: 'Salaiya, Bhopal', progress: 0, status: 'UPCOMING', investors: 0, units: 64 },
 ]
 
 const UPDATE_TYPES = ['CONSTRUCTION', 'RERA_COMPLIANCE', 'FINANCIAL', 'LEGAL', 'POSSESSION', 'GENERAL']
 
-const AI_DRAFT = `We are pleased to share the latest construction update for ShivaOS Skyline as of February 2026.
+const AI_DRAFT = `We are pleased to share the latest site update for Sankhedi Project as of February 2026.
 
-**Overall Progress: 68%** — Tower A has successfully reached the 19th floor slab, while Tower B is progressing steadily at the 16th floor. Our quality team has endorsed all completed floors with zero Non-Conformance Reports.
+**Overall Progress: 55%** — Internal CC road network is fully complete and accessible. Underground utility work (water supply lines) is 85% done, with electrical conduit laying at 55% completion across all plot zones.
 
-MEP (Mechanical, Electrical & Plumbing) rough-in work is running in parallel on floors 1–12 of Tower A, keeping us well ahead of the finishing schedule.
+All plot demarcations are clearly marked, and our survey team has verified zero encroachments across all 48 plots. Corner and premium plots have received high interest from investors.
 
-**Next Milestone**: Completion of slabs up to the 20th floor (Tower A) is targeted by **15 March 2026**.
+**Next Milestone**: Completion of underground utilities and landscaping of the central green zone, targeted by **30 April 2026**.
 
-Possession remains on track for **March 2026**. Thank you for your continued trust in ShivaOS Realty.`
+Possession and registry remains on track for **December 2026**. Thank you for your continued trust in Shiva Buildcon.`
 
 export default function BuilderProjectsPage() {
     const [showComposer, setShowComposer] = useState(false)
@@ -167,8 +167,8 @@ export default function BuilderProjectsPage() {
                                             key={t}
                                             onClick={() => setUpdateType(t)}
                                             className={`flex-shrink-0 px-3 py-1 rounded-lg text-xs font-medium transition-colors ${updateType === t
-                                                    ? 'bg-brand-accent text-brand-primary'
-                                                    : 'bg-surface-dark border border-surface-border text-text-muted hover:text-text-secondary'
+                                                ? 'bg-brand-accent text-brand-primary'
+                                                : 'bg-surface-dark border border-surface-border text-text-muted hover:text-text-secondary'
                                                 }`}
                                         >
                                             {t.replace(/_/g, ' ')}

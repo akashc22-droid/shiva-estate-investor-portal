@@ -14,14 +14,14 @@ export async function POST(request: NextRequest) {
         const { investmentData } = body
 
         const userMessage = `Analyze this investment:
-Project: ${investmentData?.projectName ?? 'ShivaOS Skyline'}
-Location: ${investmentData?.location ?? 'Kokapet, Hyderabad'}
-Unit: ${investmentData?.unit ?? '2BHK, 1200 sqft, Unit A-1204'}
-Invested: ₹${investmentData?.investedAmount ?? '1,20,00,000'}
-Progress: ${investmentData?.progress ?? 68}% complete
-RERA Number: ${investmentData?.reraNumber ?? 'P02400001234'}
-Expected Possession: ${investmentData?.possessionDate ?? 'March 2026'}
-Comparable market rate: ₹7,200/sqft (current) in Kokapet micro-market
+Project: ${investmentData?.projectName ?? 'Sankhedi Project'}
+Location: ${investmentData?.location ?? 'Kolar Road, Near SAGE International School, Bhopal, MP'}
+Unit: ${investmentData?.unit ?? 'Residential Plot SP-07, 1800 sqft'}
+Invested: ₹${investmentData?.investedAmount ?? '75,00,000'}
+Progress: ${investmentData?.progress ?? 55}% complete
+RERA Number: ${investmentData?.reraNumber ?? 'P4500012345'}
+Expected Possession: ${investmentData?.possessionDate ?? 'December 2026'}
+Comparable market rate: ₹3,800/sqft (current) in Kolar Road micro-market, Bhopal
 
 Provide return prediction with specific numbers, reasoning, and confidence level.`
 

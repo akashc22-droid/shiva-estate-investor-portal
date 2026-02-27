@@ -21,12 +21,12 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ShivaOS Investor Portal — Your Investment. Your Transparency.",
+  title: "Shiva Estate Investor Portal — Your Investment. Your Transparency.",
   description:
-    "A premium, real-time investor relations platform by ShivaOS Realty. Track your investment, monitor construction progress, and view AI-powered return predictions.",
-  keywords: "real estate investment, ShivaOS Realty, Hyderabad property, investor portal",
+    "A premium investor relations platform by Shiva Estate & Shiva Buildcon, Bhopal. Track your investment in Sankhedi Project, Pinaki Home & Salaiya Project. Monitor construction progress and view AI-powered return predictions.",
+  keywords: "real estate investment, Shiva Estate, Shiva Buildcon, Bhopal property, Sankhedi Project, Pinaki Home, investor portal, Kolar Road",
   openGraph: {
-    title: "ShivaOS Investor Portal",
+    title: "Shiva Estate Investor Portal",
     description: "Track your investment. Monitor construction. Predict your returns.",
     type: "website",
   },
