@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shiva Estate Investor Portal — Powered by Artha
+
+A premium investor relations platform built on the **Artha** multi-tenant SaaS platform.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) — use **Demo Login → Client Walkthrough** to explore.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏢 Multi-Tenant Architecture (Artha Platform)
 
-## Learn More
+This app is a tenant on **artha.io**. Each builder gets their own subdomain:
 
-To learn more about Next.js, take a look at the following resources:
+| URL | Tenant |
+|-----|--------|
+| `shivaos.artha.io` | Shiva Estate (production) |
+| `shivaos.localhost:3000` | Shiva Estate (local dev) |
+| `localhost:3000` | Shiva Estate (default fallback) |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The middleware extracts the subdomain from the hostname and injects it as the
+`x-builder-subdomain` request header. All pages and APIs read from this header
+via `lib/brand.ts → getBuilderBrand(subdomain)`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Local Multi-Tenant Testing
 
-## Deploy on Vercel
+To test subdomain routing locally, add the following to your `/etc/hosts` file:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+# Artha platform — local multi-tenant testing
+127.0.0.1  shivaos.localhost
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Then open [`http://shivaos.localhost:3000`](http://shivaos.localhost:3000).
+
+> **macOS/Linux**: `sudo nano /etc/hosts` and add the line above.
+> **Windows**: Open `C:\Windows\System32\drivers\etc\hosts` as Administrator.
+
+---
+
+## 🔑 Environment Variables
+
+Copy `.env.example` to `.env.local` and fill in:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | Optional | Auth (demo mode works without it) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Optional | Auth (demo mode works without it) |
+| `DATABASE_URL` | Optional | Prisma DB (demo data used without it) |
+| `ANTHROPIC_API_KEY` | Optional | AI return predictions |
+
+Without any env vars, the app runs in **demo mode** — all pages use Shiva Estate
+mock data and no auth is enforced.
+
+---
+
+## 🗄️ Database
+
+```bash
+# Generate Prisma client
+pnpm prisma generate
+
+# Run migrations (requires DATABASE_URL)
+pnpm prisma migrate dev
+
+# Seed demo data (requires DATABASE_URL)
+pnpm db:seed
+```
+
+### Migrations
+
+| Migration | Description |
+|---|---|
+| `20260227_add_artha_whitelabel` | Adds `accentColor`, `faviconUrl`, `tagline`, `customDomain`, `tier`, `showPoweredBy` to Builder |
+
+---
+
+## 🚀 Deployment (Vercel)
+
+1. Connect GitHub repo `akashc22-droid/shiva-estate-investor-portal` to Vercel
+2. Add env vars in Vercel → Settings → Environment Variables
+3. `ANTHROPIC_API_KEY` is sufficient for the demo — all other vars are optional
+
+The build script runs `prisma generate` automatically before `next build`.
+
+---
+
+## 📁 Project Structure
+
+```
+lib/
+  brand.ts          ← Artha brand resolver (getBuilderBrand, extractSubdomain)
+  prisma/client.ts  ← Lazy Prisma singleton (demo-safe)
+  supabase/         ← Supabase client/server helpers
+middleware.ts       ← Subdomain extraction + Supabase auth guard
+prisma/
+  schema.prisma     ← Data models (Builder, Project, Investor, Investment…)
+  migrations/       ← SQL migration history
+  seed.ts           ← Demo seed data (Shiva Estate / Sankhedi / Pinaki / Salaiya)
+app/
+  (auth)/           ← Login pages
+  (investor)/       ← Investor-facing portal
+  (builder)/        ← Builder admin portal
+  api/              ← AI endpoints (return predictor, update generator, classify)
+```
