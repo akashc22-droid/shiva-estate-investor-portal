@@ -1,0 +1,49 @@
+{
+    "name": "Shiva Estate Investor Portal",
+    "short_name": "ShivaOS",
+    "description": "Track your investment. Monitor construction. Predict your returns.",
+    "start_url": "/dashboard",
+    "display": "standalone",
+    "orientation": "portrait-primary",
+    "background_color": "#0F0F1A",
+    "theme_color": "#C9A84C",
+    "categories": [
+        "finance",
+        "business"
+    ],
+    "lang": "en",
+    "icons": [
+        {
+            "src": "/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "short_name": "Home",
+            "url": "/dashboard",
+            "description": "View your investment dashboard"
+        },
+        {
+            "name": "Projects",
+            "short_name": "Projects",
+            "url": "/projects",
+            "description": "Browse all your projects"
+        },
+        {
+            "name": "Returns",
+            "short_name": "Returns",
+            "url": "/returns",
+            "description": "AI return analysis"
+        }
+    ]
+}
