@@ -47,13 +47,17 @@ async function main() {
     // ── 1. Builder: ShivaOS Realty ─────────────────────────────────────────────
     const builder = await prisma.builder.create({
         data: {
-            name: 'ShivaOS Realty',
+            name: 'Shiva Estate',
             logoUrl: null, // will upload via settings
             primaryColor: '#C9A84C',
+            accentColor: '#1A1A2E',
             subdomain: 'shivaos',
-            contactEmail: 'invest@shivaos.com',
-            contactPhone: '+91 40 4567 8900',
+            tagline: 'Shiva Buildcon · Shiva Investments',
+            contactEmail: 'invest@shivaestate.com',
+            contactPhone: '+91 755 4567 8900',
             reraId: 'A01600000001',
+            tier: 'STARTER',
+            showPoweredBy: true,
         },
     })
     console.log('✅ Builder created:', builder.name)

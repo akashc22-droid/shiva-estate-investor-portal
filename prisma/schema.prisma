@@ -11,16 +11,22 @@ datasource db {
 // ─── Builder (the real estate company) ───────────────────────────────────────
 
 model Builder {
-  id           String        @id @default(cuid())
+  id           String      @id @default(cuid())
   name         String
   logoUrl      String?
-  primaryColor String        @default("#C9A84C")
-  subdomain    String        @unique // e.g., "shivaos" → shivaos.yourplatform.com
+  primaryColor String      @default("#C9A84C")
+  accentColor  String      @default("#1A1A2E")
+  subdomain    String      @unique // e.g., "shivaos" → shivaos.artha.io
+  customDomain String?     @unique // e.g., "invest.shivaestate.com"
+  faviconUrl   String?
+  tagline      String?
   contactEmail String
   contactPhone String?
   reraId       String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  tier         BuilderTier @default(STARTER)
+  showPoweredBy Boolean   @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
   projects  Project[]
   investors Investor[]
@@ -42,6 +48,12 @@ enum BuilderRole {
   ADMIN
   MANAGER
   VIEWER
+}
+
+enum BuilderTier {
+  STARTER
+  GROWTH
+  ENTERPRISE
 }
 
 // ─── Project ─────────────────────────────────────────────────────────────────
