@@ -9,34 +9,34 @@ import { AmountDisplay } from '@/components/shared/AmountDisplay'
 const DEMO_INVESTMENTS = [
     {
         id: 'inv1',
-        projectName: 'ShivaOS Skyline — Unit A-1204',
-        investedAmount: 12000000,
-        currentMarketValue: 13824000,
-        unrealisedGainPct: 15.2,
-        projectedMin: 14600000,
-        projectedMax: 15800000,
-        irrMin: 16.5,
-        irrMax: 22.3,
-        confidenceScore: 0.82,
-        predictedReturnRange: '15–22%',
+        projectName: 'Sankhedi Project — Plot SP-07',
+        investedAmount: 7500000,
+        currentMarketValue: 8625000,
+        unrealisedGainPct: 15.0,
+        projectedMin: 9000000,
+        projectedMax: 10200000,
+        irrMin: 14.5,
+        irrMax: 20.0,
+        confidenceScore: 0.80,
+        predictedReturnRange: '14–20%',
     },
 ]
 
 const CHART_DATA = [
-    { month: 'Jan \'24', invested: 500000, projected: 500000 },
-    { month: 'Mar \'24', invested: 2500000, projected: 2600000 },
-    { month: 'Jun \'24', invested: 5500000, projected: 5900000 },
-    { month: 'Oct \'24', invested: 7000000, projected: 7700000 },
-    { month: 'Dec \'24', invested: 8500000, projected: 9500000 },
-    { month: 'Mar \'26', invested: 12000000, projected: 13800000 },
-    { month: 'Mar \'27', invested: 12000000, projected: 15200000 },
+    { month: 'Apr \'24', invested: 375000, projected: 375000 },
+    { month: 'Jun \'24', invested: 1125000, projected: 1180000 },
+    { month: 'Sep \'24', invested: 2250000, projected: 2420000 },
+    { month: 'Dec \'24', invested: 3750000, projected: 4100000 },
+    { month: 'Mar \'25', invested: 4500000, projected: 5050000 },
+    { month: 'Dec \'26', invested: 7500000, projected: 8625000 },
+    { month: 'Dec \'27', invested: 7500000, projected: 9800000 },
 ]
 
 const COMPS = [
-    { name: 'Prestige Golfshire', launch: '₹6,200/sqft', current: '₹8,100/sqft', change: '+30.6%' },
-    { name: 'Aparna Cyberzon', launch: '₹5,800/sqft', current: '₹7,400/sqft', change: '+27.6%' },
-    { name: 'Sobha City', launch: '₹6,500/sqft', current: '₹8,600/sqft', change: '+32.3%' },
-    { name: 'SMR Vinay Iconia', launch: '₹5,500/sqft', current: '₹7,000/sqft', change: '+27.3%' },
+    { name: 'Kolar Road Plots (Avg)', launch: '₹2,800/sqft', current: '₹3,850/sqft', change: '+37.5%' },
+    { name: 'Banjari Heights', launch: '₹3,100/sqft', current: '₹4,000/sqft', change: '+29.0%' },
+    { name: 'Nayapura Township', launch: '₹2,600/sqft', current: '₹3,400/sqft', change: '+30.8%' },
+    { name: 'Salaiya Corridor', launch: '₹2,400/sqft', current: '₹3,100/sqft', change: '+29.2%' },
 ]
 
 function formatChartAmount(val: number) {
@@ -52,13 +52,13 @@ export default function ReturnsPage() {
     const [isComplete, setIsComplete] = useState(false)
     const streamRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-    const AI_ANALYSIS = `Based on analysis of 47 registered transactions in the Kokapet micro-market over the last 18 months, comparable 2BHK units in luxury projects have appreciated at 8.2% annually. ShivaOS Skyline's on-time construction trajectory and RERA compliance score of 94% position it in the top quartile for this corridor.
+    const AI_ANALYSIS = `Based on analysis of 28 registered plot transactions on the Kolar Road and Banjari corridor over the last 18 months, residential plots in this zone have appreciated at 12–18% annually. Sankhedi Project's location near SAGE International School places it in a high-demand micro-market driven by education infrastructure and expanding IT workforce housing.
 
-Infrastructure catalysts — the upcoming Kokapet Metro station (2026) and ORR access — are driving demand from IT workforce buyers. Current absorption rate in the micro-market stands at 78%, a 12-point improvement year-over-year.
+Infrastructure catalysts — the Kolar Road widening project, new BRTS corridor, and proximity to Rajiv Gandhi College — are driving robust buyer demand. Current plot absorption rate in the Kolar Road micro-market stands at 72%, up 15 points year-over-year. RERA compliance score of 88/100.
 
-Considering your purchase price of ₹7,200/sqft, the projected exit value of ₹8,800–9,200/sqft at possession (March 2026) translates to an unrealised gain of 22–28%. The IRR of 16.5–22.3% compares favourably with comparable projects in this corridor and outperforms fixed-income alternatives.
+Considering your purchase price of ₹3,800/sqft (Plot SP-07, 1800 sqft), the projected exit value of ₹5,000–5,600/sqft at registry (December 2026) translates to an unrealised gain of 14–20%. The IRR of 14.5–20.0% compares favourably with comparable plotted developments in Nayapura, Banjari, and Salaiya corridors.
 
-Risk factors: Project is tracking on schedule (RERA compliance: 94/100). Market risk is moderate given strong end-user demand. Recommended hold period: possession + 18 months for optimal capital gains treatment.`
+Risk factors: Project is 55% complete with RERA registration active (P4500012345). Market risk is low given consistent end-user demand. Recommended hold: post-registry + 24 months for optimal capital gains treatment.`
 
     function startStreaming() {
         setStreaming(true)
@@ -129,7 +129,7 @@ Risk factors: Project is tracking on schedule (RERA compliance: 94/100). Market 
                 <div className="relative">
                     <div className="flex items-center gap-2 mb-4">
                         <TrendingUp size={16} className="text-brand-accent" />
-                        <p className="text-brand-accent font-semibold text-sm">Projected Value at Possession (Mar \'26)</p>
+                        <p className="text-brand-accent font-semibold text-sm">Projected Value at Registry (Dec &apos;26)</p>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -223,7 +223,7 @@ Risk factors: Project is tracking on schedule (RERA compliance: 94/100). Market 
 
             {/* Comparable projects */}
             <div className="card p-5">
-                <p className="text-text-primary font-semibold mb-4">Comparable Projects in Kokapet</p>
+                <p className="text-text-primary font-semibold mb-4">Comparable Projects — Kolar Road, Bhopal</p>
                 <div className="space-y-2">
                     {COMPS.map((comp) => (
                         <div key={comp.name} className="flex items-center justify-between py-2 border-b border-surface-border last:border-0">
