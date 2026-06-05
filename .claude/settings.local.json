@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//c/Program Files/**)",
-      "Read(//c/Users/akash.chandani/AppData/Roaming/**)",
-      "Read(//c/Users/akash.chandani/AppData/Local/pnpm//**)"
-    ]
-  }
-}
