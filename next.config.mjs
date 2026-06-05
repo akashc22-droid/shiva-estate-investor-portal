@@ -1,13 +1,10 @@
-import { createRequire } from 'module'
-const require = createRequire(import.meta.url)
+import withPWAInit from '@ducanh2912/next-pwa'
 
-const withPWA = require('next-pwa')({
+const withPWA = withPWAInit({
     dest: 'public',
-    // Disable service worker in development to avoid caching issues
     disable: process.env.NODE_ENV === 'development',
     register: true,
     skipWaiting: true,
-    // Don't precache next image optimisation or API routes
     buildExcludes: [/middleware-manifest\.json$/],
     publicExcludes: ['!icons/**/*'],
 })
