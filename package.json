@@ -12,8 +12,8 @@
     "db:studio": "prisma studio",
     "db:generate": "prisma generate",
     "db:reset": "prisma migrate reset --force && pnpm db:seed",
-    "cap:sync": "node -e \"const fs = require('fs'); if (!fs.existsSync('out')) fs.mkdirSync('out'); fs.writeFileSync('out/index.html', '<html></html>');\" && npx cap sync",
-    "cap:open": "npx cap open android"
+    "cap:sync": "node -e \"const fs = require('fs'); if (!fs.existsSync('out')) fs.mkdirSync('out'); fs.writeFileSync('out/index.html', '<html></html>');\" && cap sync",
+    "cap:open": "cap open android"
   },
   "dependencies": {
     "@capacitor/core": "^6.0.0",
