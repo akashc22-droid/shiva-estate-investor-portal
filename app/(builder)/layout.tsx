@@ -1,9 +1,22 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { LayoutDashboard, FolderKanban, Users, FileText, Settings, Building2, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils/format'
+
+async function signOut() {
+    // Best-effort server sign-out (no-op in demo mode), then back to login.
+    try {
+        await fetch('/api/auth/session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'logout' }),
+        })
+    } catch {
+        // ignore — demo mode has no session to clear
+    }
+}
 
 const NAV_ITEMS = [
     { href: '/builder/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -15,6 +28,7 @@ const NAV_ITEMS = [
 
 export default function BuilderLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname()
+    const router = useRouter()
 
     return (
         <div className="min-h-screen bg-surface-dark flex">
@@ -53,7 +67,10 @@ export default function BuilderLayout({ children }: { children: React.ReactNode 
                 </nav>
 
                 <div className="p-3 border-t border-surface-border">
-                    <button className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-text-muted hover:text-status-red hover:bg-status-red/5 transition-all">
+                    <button
+                        onClick={async () => { await signOut(); router.push('/login') }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm text-text-muted hover:text-status-red hover:bg-status-red/5 transition-all"
+                    >
                         <LogOut size={16} />
                         Sign Out
                     </button>

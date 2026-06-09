@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Mail, Lock, ArrowRight, Loader2, Building2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { isSupabaseConfigured } from '@/lib/supabase/client'
 
 export default function BuilderLoginPage() {
     const router = useRouter()
@@ -23,12 +24,18 @@ export default function BuilderLoginPage() {
         setError('')
         setLoading(true)
         try {
+            // Demo mode — no auth backend, so accept the credentials and open
+            // the admin portal for the walkthrough.
+            if (!isSupabaseConfigured) {
+                router.push('/builder/dashboard')
+                return
+            }
             const supabase = await getSupabase()
             const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
             if (authError) { setError(authError.message); return }
             router.push('/builder/dashboard')
         } catch {
-            setError('Authentication not configured — use Demo Login on the main page.')
+            setError('Could not sign in. Use the Demo Admin View below.')
         } finally {
             setLoading(false)
         }

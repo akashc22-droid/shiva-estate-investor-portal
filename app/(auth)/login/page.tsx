@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Phone, Mail, ArrowRight, Shield, ChevronRight, Loader2, CheckCircle, Play } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { isSupabaseConfigured } from '@/lib/supabase/client'
 
 type Step = 'input' | 'otp' | 'email_sent'
 type Mode = 'phone' | 'email'
@@ -37,13 +38,19 @@ export default function LoginPage() {
         setError('')
         setLoading(true)
         try {
+            // Demo mode (no Supabase configured) — skip the SMS provider and go
+            // straight to OTP entry so the walkthrough works end-to-end.
+            if (!isSupabaseConfigured) {
+                setStep('otp')
+                return
+            }
             const supabase = await getSupabase()
             const fullPhone = phone.startsWith('+') ? phone : `+91${phone}`
             const { error: authError } = await supabase.auth.signInWithOtp({ phone: fullPhone })
             if (authError) { setError(authError.message); return }
             setStep('otp')
         } catch {
-            setError('Supabase not configured — use Demo Login below for the client walkthrough.')
+            setError('Could not send OTP. Use Demo Login below for the client walkthrough.')
         } finally {
             setLoading(false)
         }
@@ -54,13 +61,18 @@ export default function LoginPage() {
         setError('')
         setLoading(true)
         try {
+            // Demo mode — accept any 6-digit code and enter the portal.
+            if (!isSupabaseConfigured) {
+                router.push('/dashboard')
+                return
+            }
             const supabase = await getSupabase()
             const fullPhone = phone.startsWith('+') ? phone : `+91${phone}`
             const { error: authError } = await supabase.auth.verifyOtp({ phone: fullPhone, token: otp, type: 'sms' })
             if (authError) { setError(authError.message); return }
             router.push('/dashboard')
         } catch {
-            setError('Authentication not configured — use Demo Login.')
+            setError('Could not verify OTP. Use Demo Login on the previous screen.')
         } finally {
             setLoading(false)
         }
@@ -71,6 +83,12 @@ export default function LoginPage() {
         setError('')
         setLoading(true)
         try {
+            // Demo mode — no mail provider can deliver a magic link, so enter
+            // the portal directly instead of showing a link that never arrives.
+            if (!isSupabaseConfigured) {
+                router.push('/dashboard')
+                return
+            }
             const supabase = await getSupabase()
             const { error: authError } = await supabase.auth.signInWithOtp({
                 email,
@@ -79,7 +97,7 @@ export default function LoginPage() {
             if (authError) { setError(authError.message); return }
             setStep('email_sent')
         } catch {
-            setError('Authentication not configured — use Demo Login.')
+            setError('Could not send the magic link. Use Demo Login below.')
         } finally {
             setLoading(false)
         }
@@ -230,6 +248,9 @@ export default function LoginPage() {
                                     <button onClick={() => setStep('input')} className="flex items-center gap-1 text-text-muted text-xs mb-4 hover:text-text-secondary transition-colors">← Back</button>
                                     <h2 className="font-display text-xl font-semibold text-text-primary mb-1">Enter OTP</h2>
                                     <p className="text-text-secondary text-sm mb-6">Sent to +91 {phone}</p>
+                                    {!isSupabaseConfigured && (
+                                        <p className="text-text-muted text-[11px] -mt-4 mb-5">Demo mode — enter any 6 digits to continue.</p>
+                                    )}
                                     <form onSubmit={handleOtpVerify} className="space-y-4">
                                         <input id="otp-input" type="text" value={otp}
                                             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}

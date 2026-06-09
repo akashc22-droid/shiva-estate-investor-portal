@@ -2,40 +2,44 @@ import { createServerClient } from '@supabase/ssr'
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
-export async function GET() {
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll: () => cookieStore.getAll(),
-                setAll: (cs) => cs.forEach(({ name, value, options }) => cookieStore.set(name, value, options)),
-            },
-        }
-    )
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const DEMO_URL = 'https://demo.supabase.co'
+const DEMO_KEY = 'demo-key-placeholder'
 
+const isConfigured =
+    !!url && !!key && url !== DEMO_URL && key !== DEMO_KEY && /^https?:\/\//.test(url)
+
+async function getServerClient() {
+    const cookieStore = await cookies()
+    return createServerClient(url!, key!, {
+        cookies: {
+            getAll: () => cookieStore.getAll(),
+            setAll: (cs) => cs.forEach(({ name, value, options }) => cookieStore.set(name, value, options)),
+        },
+    })
+}
+
+export async function GET() {
+    // Demo mode — no auth backend; report unauthenticated without touching Supabase.
+    if (!isConfigured) {
+        return NextResponse.json({ authenticated: false, userId: null, demo: true })
+    }
+
+    const supabase = await getServerClient()
     const { data: { session } } = await supabase.auth.getSession()
     return NextResponse.json({ authenticated: !!session, userId: session?.user?.id ?? null })
 }
 
 export async function POST(request: NextRequest) {
-    const cookieStore = await cookies()
-    const supabase = createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll: () => cookieStore.getAll(),
-                setAll: (cs) => cs.forEach(({ name, value, options }) => cookieStore.set(name, value, options)),
-            },
-        }
-    )
-
     const { action } = await request.json()
 
     if (action === 'logout') {
-        await supabase.auth.signOut()
+        // Demo mode has no session to clear — succeed silently.
+        if (isConfigured) {
+            const supabase = await getServerClient()
+            await supabase.auth.signOut()
+        }
         return NextResponse.json({ success: true })
     }
 
