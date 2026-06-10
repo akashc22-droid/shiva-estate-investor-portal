@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Mail, Lock, ArrowRight, Loader2, Building2 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { isSupabaseConfigured } from '@/lib/supabase/client'
+import { DEMO_MODE } from '@/lib/config'
 
 export default function BuilderLoginPage() {
     const router = useRouter()
@@ -26,7 +26,7 @@ export default function BuilderLoginPage() {
         try {
             // Demo mode — no auth backend, so accept the credentials and open
             // the admin portal for the walkthrough.
-            if (!isSupabaseConfigured) {
+            if (DEMO_MODE) {
                 router.push('/builder/dashboard')
                 return
             }
@@ -109,12 +109,14 @@ export default function BuilderLoginPage() {
                 </div>
 
                 <div className="text-center mt-6 space-y-2">
-                    <button
-                        onClick={() => router.push('/builder/dashboard')}
-                        className="block w-full text-brand-accent text-xs border border-brand-accent/20 rounded-xl py-2 hover:bg-brand-accent/5 transition-colors"
-                    >
-                        ▷ Demo Admin View (no login needed)
-                    </button>
+                    {DEMO_MODE && (
+                        <button
+                            onClick={() => router.push('/builder/dashboard')}
+                            className="block w-full text-brand-accent text-xs border border-brand-accent/20 rounded-xl py-2 hover:bg-brand-accent/5 transition-colors"
+                        >
+                            ▷ Demo Admin View (no login needed)
+                        </button>
+                    )}
                     <Link href="/login" className="block text-text-muted text-xs hover:text-text-secondary transition-colors">
                         ← Back to Investor Login
                     </Link>

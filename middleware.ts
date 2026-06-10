@@ -15,6 +15,7 @@
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { DEMO_MODE } from '@/lib/config'
 
 // ─── Subdomain extraction ──────────────────────────────────────────────────────
 
@@ -78,15 +79,28 @@ export async function middleware(request: NextRequest) {
     const publicPaths = ['/login', '/builder-login', '/api/', '/_next/', '/favicon']
     const isPublic = publicPaths.some(p => pathname.startsWith(p)) || pathname === '/'
 
-    // Check for Supabase credentials — if absent, run in demo mode (no auth)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-    if (!supabaseUrl || !supabaseKey) {
-        // Demo mode: no auth enforcement — pass through with subdomain header
+    // ── Demo mode (pitch walkthrough) — EXPLICIT opt-in only ────────────────
+    // Controlled by NEXT_PUBLIC_DEMO_MODE. When on, auth is not enforced.
+    if (DEMO_MODE) {
         return NextResponse.next({
             request: { headers: requestHeaders },
         })
+    }
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    // ── Fail CLOSED ─────────────────────────────────────────────────────────
+    // Not demo mode, but Supabase isn't configured (e.g. a missing env var on a
+    // production deploy). We cannot verify a session, so we must NOT silently
+    // let everyone in. Deny protected routes; public routes still pass.
+    if (!supabaseUrl || !supabaseKey) {
+        if (isPublic) {
+            return NextResponse.next({ request: { headers: requestHeaders } })
+        }
+        const loginUrl = request.nextUrl.clone()
+        loginUrl.pathname = '/login'
+        return NextResponse.redirect(loginUrl)
     }
 
     // Auth mode: normal Supabase session check

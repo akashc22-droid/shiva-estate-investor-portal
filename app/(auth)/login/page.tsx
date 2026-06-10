@@ -5,17 +5,35 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Phone, Mail, ArrowRight, Shield, ChevronRight, Loader2, CheckCircle, Play } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { isSupabaseConfigured } from '@/lib/supabase/client'
+import { DEMO_MODE } from '@/lib/config'
 
-type Step = 'input' | 'otp' | 'email_sent'
+type Step = 'input' | 'otp' | 'email_otp'
 type Mode = 'phone' | 'email'
 
-// Demo investors for the bypass
+// Demo investors for the bypass (only shown when DEMO_MODE is on)
 const DEMO_USERS = [
     { name: 'Rajesh Sharma', subtitle: 'Sankhedi Project · Plot SP-07', href: '/dashboard' },
     { name: 'Priya Nair (NRI)', subtitle: 'Pinaki Home · Flat PH-204', href: '/dashboard' },
     { name: 'Builder Admin', subtitle: 'Shiva Estate — Admin View', href: '/builder/dashboard' },
 ]
+
+// Turn raw Supabase auth errors into investor-friendly guidance.
+function friendlyAuthError(message: string): string {
+    const m = message.toLowerCase()
+    if (m.includes('signups not allowed') || m.includes('not allowed') || m.includes('user not found')) {
+        return 'This number/email isn’t registered for the pilot yet. Please contact your relationship manager.'
+    }
+    if (m.includes('invalid') && m.includes('token')) {
+        return 'That code is incorrect or has expired. Please request a new one.'
+    }
+    if (m.includes('expired')) {
+        return 'That code has expired. Please request a new one.'
+    }
+    if (m.includes('rate') || m.includes('too many')) {
+        return 'Too many attempts. Please wait a minute and try again.'
+    }
+    return message
+}
 
 export default function LoginPage() {
     const router = useRouter()
@@ -38,19 +56,22 @@ export default function LoginPage() {
         setError('')
         setLoading(true)
         try {
-            // Demo mode (no Supabase configured) — skip the SMS provider and go
-            // straight to OTP entry so the walkthrough works end-to-end.
-            if (!isSupabaseConfigured) {
+            // Demo mode — skip the SMS provider, go straight to OTP entry.
+            if (DEMO_MODE) {
                 setStep('otp')
                 return
             }
             const supabase = await getSupabase()
             const fullPhone = phone.startsWith('+') ? phone : `+91${phone}`
-            const { error: authError } = await supabase.auth.signInWithOtp({ phone: fullPhone })
-            if (authError) { setError(authError.message); return }
+            // shouldCreateUser:false — pilot is invite-only; only seeded users.
+            const { error: authError } = await supabase.auth.signInWithOtp({
+                phone: fullPhone,
+                options: { shouldCreateUser: false },
+            })
+            if (authError) { setError(friendlyAuthError(authError.message)); return }
             setStep('otp')
         } catch {
-            setError('Could not send OTP. Use Demo Login below for the client walkthrough.')
+            setError('Could not send the OTP. Please check your connection and try again.')
         } finally {
             setLoading(false)
         }
@@ -62,42 +83,66 @@ export default function LoginPage() {
         setLoading(true)
         try {
             // Demo mode — accept any 6-digit code and enter the portal.
-            if (!isSupabaseConfigured) {
+            if (DEMO_MODE) {
                 router.push('/dashboard')
                 return
             }
             const supabase = await getSupabase()
             const fullPhone = phone.startsWith('+') ? phone : `+91${phone}`
             const { error: authError } = await supabase.auth.verifyOtp({ phone: fullPhone, token: otp, type: 'sms' })
-            if (authError) { setError(authError.message); return }
+            if (authError) { setError(friendlyAuthError(authError.message)); return }
             router.push('/dashboard')
         } catch {
-            setError('Could not verify OTP. Use Demo Login on the previous screen.')
+            setError('Could not verify the code. Please try again.')
         } finally {
             setLoading(false)
         }
     }
 
+    // ── Email OTP (6-digit code, not magic link) ────────────────────────────
+    // A code flow verifies inside the WebView — no deep-link redirect needed.
+    // Requires the Supabase email template to send {{ .Token }}.
     async function handleEmailSubmit(e: React.FormEvent) {
         e.preventDefault()
         setError('')
         setLoading(true)
         try {
-            // Demo mode — no mail provider can deliver a magic link, so enter
-            // the portal directly instead of showing a link that never arrives.
-            if (!isSupabaseConfigured) {
-                router.push('/dashboard')
+            // Demo mode — no mail provider; jump to the code screen (any code works).
+            if (DEMO_MODE) {
+                setStep('email_otp')
                 return
             }
             const supabase = await getSupabase()
             const { error: authError } = await supabase.auth.signInWithOtp({
                 email,
-                options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+                options: { shouldCreateUser: false },
             })
-            if (authError) { setError(authError.message); return }
-            setStep('email_sent')
+            if (authError) { setError(friendlyAuthError(authError.message)); return }
+            setOtp('')
+            setStep('email_otp')
         } catch {
-            setError('Could not send the magic link. Use Demo Login below.')
+            setError('Could not send the code. Please check your connection and try again.')
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    async function handleEmailOtpVerify(e: React.FormEvent) {
+        e.preventDefault()
+        setError('')
+        setLoading(true)
+        try {
+            // Demo mode — accept any 6-digit code and enter the portal.
+            if (DEMO_MODE) {
+                router.push('/dashboard')
+                return
+            }
+            const supabase = await getSupabase()
+            const { error: authError } = await supabase.auth.verifyOtp({ email, token: otp, type: 'email' })
+            if (authError) { setError(friendlyAuthError(authError.message)); return }
+            router.push('/dashboard')
+        } catch {
+            setError('Could not verify the code. Please try again.')
         } finally {
             setLoading(false)
         }
@@ -150,7 +195,7 @@ export default function LoginPage() {
                                             <button key={m} onClick={() => setMode(m)}
                                                 className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all ${mode === m ? 'bg-surface-card text-text-primary shadow-card' : 'text-text-muted hover:text-text-secondary'}`}>
                                                 {m === 'phone' ? <Phone size={14} /> : <Mail size={14} />}
-                                                {m === 'phone' ? 'Mobile OTP' : 'Email Link'}
+                                                {m === 'phone' ? 'Mobile OTP' : 'Email OTP'}
                                             </button>
                                         ))}
                                     </div>
@@ -188,11 +233,14 @@ export default function LoginPage() {
                                             <button type="submit" disabled={loading}
                                                 className="w-full flex items-center justify-center gap-2 bg-brand-accent text-brand-primary font-semibold py-3 rounded-xl hover:bg-brand-accent-light transition-colors disabled:opacity-50">
                                                 {loading ? <Loader2 size={16} className="animate-spin" /> : null}
-                                                Send Magic Link {!loading && <ArrowRight size={16} />}
+                                                Send Code {!loading && <ArrowRight size={16} />}
                                             </button>
                                         </form>
                                     )}
 
+                                    {/* Demo Login — only when DEMO_MODE is explicitly enabled (pitch builds) */}
+                                    {DEMO_MODE && (
+                                    <>
                                     {/* Divider */}
                                     <div className="flex items-center gap-3 my-5">
                                         <div className="flex-1 h-px bg-surface-border" />
@@ -240,6 +288,8 @@ export default function LoginPage() {
                                             </motion.div>
                                         )}
                                     </AnimatePresence>
+                                    </>
+                                    )}
                                 </motion.div>
                             )}
 
@@ -248,7 +298,7 @@ export default function LoginPage() {
                                     <button onClick={() => setStep('input')} className="flex items-center gap-1 text-text-muted text-xs mb-4 hover:text-text-secondary transition-colors">← Back</button>
                                     <h2 className="font-display text-xl font-semibold text-text-primary mb-1">Enter OTP</h2>
                                     <p className="text-text-secondary text-sm mb-6">Sent to +91 {phone}</p>
-                                    {!isSupabaseConfigured && (
+                                    {DEMO_MODE && (
                                         <p className="text-text-muted text-[11px] -mt-4 mb-5">Demo mode — enter any 6 digits to continue.</p>
                                     )}
                                     <form onSubmit={handleOtpVerify} className="space-y-4">
@@ -267,17 +317,31 @@ export default function LoginPage() {
                                 </motion.div>
                             )}
 
-                            {step === 'email_sent' && (
-                                <motion.div key="email_sent" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-4">
-                                    <div className="w-16 h-16 rounded-full bg-status-green/10 border border-status-green/20 flex items-center justify-center mx-auto mb-4">
-                                        <CheckCircle size={28} className="text-status-green" />
+                            {step === 'email_otp' && (
+                                <motion.div key="email_otp" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                                    <button onClick={() => { setStep('input'); setOtp('') }} className="flex items-center gap-1 text-text-muted text-xs mb-4 hover:text-text-secondary transition-colors">← Back</button>
+                                    <div className="w-12 h-12 rounded-full bg-status-green/10 border border-status-green/20 flex items-center justify-center mb-4">
+                                        <CheckCircle size={22} className="text-status-green" />
                                     </div>
-                                    <h2 className="font-display text-xl font-semibold text-text-primary mb-2">Check your email</h2>
-                                    <p className="text-text-secondary text-sm mb-2">Magic link sent to</p>
+                                    <h2 className="font-display text-xl font-semibold text-text-primary mb-1">Enter the code</h2>
+                                    <p className="text-text-secondary text-sm mb-1">We sent a 6-digit code to</p>
                                     <p className="text-brand-accent font-medium text-sm mb-6">{email}</p>
-                                    <button onClick={() => { setStep('input'); setEmail('') }} className="text-text-muted text-xs hover:text-text-secondary transition-colors">
-                                        Use a different email
-                                    </button>
+                                    {DEMO_MODE && (
+                                        <p className="text-text-muted text-[11px] -mt-4 mb-5">Demo mode — enter any 6 digits to continue.</p>
+                                    )}
+                                    <form onSubmit={handleEmailOtpVerify} className="space-y-4">
+                                        <input id="email-otp-input" type="text" inputMode="numeric" value={otp}
+                                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                                            placeholder="6-digit code" maxLength={6}
+                                            className="w-full bg-surface-dark border border-surface-border rounded-xl px-4 py-3 text-text-primary placeholder:text-text-muted text-center text-2xl font-mono tracking-widest focus:border-brand-accent transition-colors"
+                                            required />
+                                        {error && <p className="text-status-amber text-xs">{error}</p>}
+                                        <button type="submit" disabled={loading || otp.length < 6}
+                                            className="w-full flex items-center justify-center gap-2 bg-brand-accent text-brand-primary font-semibold py-3 rounded-xl hover:bg-brand-accent-light disabled:opacity-50 transition-colors">
+                                            {loading ? <Loader2 size={16} className="animate-spin" /> : null}
+                                            Verify & Sign In
+                                        </button>
+                                    </form>
                                 </motion.div>
                             )}
                         </AnimatePresence>
