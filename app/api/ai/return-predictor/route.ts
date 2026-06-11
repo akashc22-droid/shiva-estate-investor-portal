@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
-const SYSTEM_PROMPT = `You are a real estate investment analyst specializing in the Indian residential market.
-Analyze investment data and provide detailed return predictions with reasoning.
-Always ground analysis in specific micro-market data, RERA compliance score, and construction progress.
-Be specific with numbers. Use Indian numbering (lakhs, crores). Keep to 200-250 words.`
+import { gemini, GEMINI_MODEL, SYSTEM_PROMPTS, isGeminiConfigured } from '@/lib/ai/gemini'
 
 export async function POST(request: NextRequest) {
     try {
+        if (!isGeminiConfigured) {
+            return NextResponse.json(
+                { error: 'AI is not configured. Set GEMINI_API_KEY in the environment.' },
+                { status: 503 },
+            )
+        }
+
         const body = await request.json()
         const { investmentData } = body
 
@@ -25,12 +25,13 @@ Comparable market rate: ₹3,800/sqft (current) in Kolar Road micro-market, Bhop
 
 Provide return prediction with specific numbers, reasoning, and confidence level.`
 
-        const stream = await anthropic.messages.create({
-            model: 'claude-sonnet-4-5',
-            max_tokens: 600,
-            system: SYSTEM_PROMPT,
-            messages: [{ role: 'user', content: userMessage }],
-            stream: true,
+        const stream = await gemini.models.generateContentStream({
+            model: GEMINI_MODEL,
+            contents: userMessage,
+            config: {
+                systemInstruction: SYSTEM_PROMPTS.returnPredictor,
+                maxOutputTokens: 600,
+            },
         })
 
         const encoder = new TextEncoder()
@@ -38,10 +39,9 @@ Provide return prediction with specific numbers, reasoning, and confidence level
         const readableStream = new ReadableStream({
             async start(controller) {
                 try {
-                    for await (const event of stream) {
-                        if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
-                            controller.enqueue(encoder.encode(event.delta.text))
-                        }
+                    for await (const chunk of stream) {
+                        const text = chunk.text
+                        if (text) controller.enqueue(encoder.encode(text))
                     }
                 } finally {
                     controller.close()

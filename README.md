@@ -55,7 +55,7 @@ cp .env.example .env.local
 | `NEXT_PUBLIC_SUPABASE_URL` | Optional | Auth (demo mode works without it) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Optional | Auth (demo mode works without it) |
 | `DATABASE_URL` | Optional | Prisma DB (demo data used without it) |
-| `ANTHROPIC_API_KEY` | Optional | AI return predictions |
+| `GEMINI_API_KEY` | Optional | AI return predictions (Google Gemini) |
 
 Without any env vars, the app runs in **demo mode** — all pages use Shiva Estate
 mock data and no auth is enforced.
@@ -87,7 +87,7 @@ pnpm db:seed
 
 1. Connect GitHub repo `akashc22-droid/shiva-estate-investor-portal` to Vercel
 2. Add env vars in Vercel → Settings → Environment Variables
-3. `ANTHROPIC_API_KEY` is sufficient for the demo — all other vars are optional
+3. `GEMINI_API_KEY` is sufficient for the demo — all other vars are optional
 
 The build script runs `prisma generate` automatically before `next build`.
 

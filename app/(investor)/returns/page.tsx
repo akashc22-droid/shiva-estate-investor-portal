@@ -93,7 +93,7 @@ Risk factors: Project is 55% complete with RERA registration active (P4500012345
             {/* Header */}
             <div>
                 <h1 className="font-display text-2xl font-bold text-text-primary">AI Return Analysis</h1>
-                <p className="text-text-muted text-sm mt-1">Powered by Claude AI · Live market data</p>
+                <p className="text-text-muted text-sm mt-1">Powered by Gemini AI · Live market data</p>
             </div>
 
             {/* Project selector */}

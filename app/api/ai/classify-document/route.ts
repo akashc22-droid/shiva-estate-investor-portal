@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
-
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+import { gemini, GEMINI_MODEL, isGeminiConfigured } from '@/lib/ai/gemini'
 
 export async function POST(request: NextRequest) {
     try {
-        const body = await request.json()
-        const { fileName, mimeType, fileContent } = body
+        if (!isGeminiConfigured) {
+            return NextResponse.json(
+                { error: 'AI is not configured. Set GEMINI_API_KEY in the environment.' },
+                { status: 503 },
+            )
+        }
 
-        const message = await anthropic.messages.create({
-            model: 'claude-sonnet-4-5',
-            max_tokens: 200,
-            messages: [{
-                role: 'user',
-                content: `Classify this real estate document and extract key information.
+        const body = await request.json()
+        const { fileName, mimeType } = body
+
+        const response = await gemini.models.generateContent({
+            model: GEMINI_MODEL,
+            contents: `Classify this real estate document and extract key information.
 
 File name: ${fileName}
 MIME type: ${mimeType}
@@ -34,12 +36,15 @@ Respond in JSON format:
   },
   "summary": "One sentence description of what this document is"
 }`,
-            }],
+            config: {
+                maxOutputTokens: 400,
+                responseMimeType: 'application/json',
+            },
         })
 
-        const text = message.content[0].type === 'text' ? message.content[0].text : '{}'
+        const text = response.text ?? '{}'
 
-        // Parse JSON from Claude's response
+        // responseMimeType returns pure JSON; keep a regex fallback just in case.
         const jsonMatch = text.match(/\{[\s\S]*\}/)
         const result = jsonMatch ? JSON.parse(jsonMatch[0]) : {
             category: 'OTHER',
