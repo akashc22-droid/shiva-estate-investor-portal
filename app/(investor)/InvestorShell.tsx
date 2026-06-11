@@ -69,6 +69,13 @@ export function InvestorShell({ children, showPoweredBy, subdomain }: InvestorSh
             {/* Main content area */}
             <main className="lg:ml-60 flex-1 pb-24 lg:pb-0">
                 {children}
+
+                {/* Compliance footer — keeps Privacy + account deletion reachable in-app */}
+                <footer className="px-5 pb-6 pt-4 flex items-center justify-center gap-4 text-text-muted text-[11px]">
+                    <Link href="/privacy" className="hover:text-text-secondary transition-colors">Privacy</Link>
+                    <span className="w-px h-3 bg-surface-border" />
+                    <Link href="/delete-account" className="hover:text-text-secondary transition-colors">Delete account</Link>
+                </footer>
             </main>
 
             {/* Mobile bottom navigation */}

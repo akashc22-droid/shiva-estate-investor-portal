@@ -75,8 +75,10 @@ export async function middleware(request: NextRequest) {
 
     // ── Step 2: Auth enforcement ────────────────────────────────────────────────
 
-    // Public routes — always allow through
-    const publicPaths = ['/login', '/builder-login', '/api/', '/_next/', '/favicon']
+    // Public routes — always allow through.
+    // /privacy and /delete-account must be publicly reachable (Google Play
+    // reviewers check them without logging in); the delete API still enforces auth.
+    const publicPaths = ['/login', '/builder-login', '/privacy', '/delete-account', '/api/', '/_next/', '/favicon']
     const isPublic = publicPaths.some(p => pathname.startsWith(p)) || pathname === '/'
 
     // ── Demo mode (pitch walkthrough) — EXPLICIT opt-in only ────────────────
